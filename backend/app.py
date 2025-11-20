@@ -118,6 +118,34 @@ def add_claim():
     cur.close(); 
     conn.close()
     return jsonify(claim)
+
+@app.patch("/claim/<int:claim_id>/status")
+def update_claim_status(claim_id):
+    d = request.get_json()
+    conn = get_connection(); 
+    cur = conn.cursor()
+    cur.execute("UPDATE claim SET status=%s WHERE claimid=%s RETURNING *",
+                (d.get("status"), claim_id))
+    row = cur.fetchone(); 
+    conn.commit()
+    cur.close(); 
+    conn.close()
+    return jsonify(row or {"error": "Claim not found"}), (200 if row else 404)
+
+@app.delete("/claim/<int:claim_id>")
+def delete_claim(claim_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM claim WHERE claimid = %s RETURNING claimid", (claim_id,))
+    deleted = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not deleted:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"result": f"deleted claim {deleted['claimid']}"})
+
     
 @app.get("/")
 def home():

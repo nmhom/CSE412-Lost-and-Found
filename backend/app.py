@@ -94,6 +94,20 @@ def get_items():
     
     return jsonify(items)
 
+@app.get("/item_image/<int:item_id>")
+def get_item_image(item_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("SELECT * FROM item_image WHERE itemid=%s", (item_id,))
+    image = cur.fetchone()
+    cur.close()
+    conn.close()
+    
+    if not image:
+        return jsonify({"error": "No image"}), 404
+    return jsonify(image)
+
 @app.get("/claim")
 def get_claims():
     conn = get_connection(); 

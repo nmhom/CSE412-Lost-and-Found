@@ -97,8 +97,10 @@ def get_items():
 @app.get("/claim")
 def get_claims():
     conn = get_conn(); cur = conn.cursor()
-    cur.execute("SELECT * FROM claim ORDER BY claimid DESC"); claims = cur.fetchall()
-    cur.close(); conn.close()
+    cur.execute("SELECT * FROM claim ORDER BY claimid DESC"); 
+    claims = cur.fetchall()
+    cur.close(); 
+    conn.close()
     return jsonify(claims)
 
 @app.post("/claim")
@@ -110,8 +112,10 @@ def add_claim():
         VALUES (%s,%s,%s,%s,%s) RETURNING *""",
         (d.get("claimDate"), d.get("status"), d.get("claimDescription"),
          d.get("itemID"), d.get("userID")))
-    claim = cur.fetchone(); conn.commit()
-    cur.close(); conn.close()
+    claim = cur.fetchone(); 
+    conn.commit()
+    cur.close(); 
+    conn.close()
     return jsonify(claim)
     
 @app.get("/")

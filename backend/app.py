@@ -94,6 +94,56 @@ def get_items():
     
     return jsonify(items)
 
+@app.patch("/item/<int:item_id>")
+def update_item(item_id):
+    data = request.json
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    # check if item exists
+    cur.execute("SELECT * FROM item WHERE itemid=%s", (item_id,))
+    if not cur.fetchone():
+        cur.close()
+        conn.close()
+        return jsonify({"error": "Item not found"}), 404
+    # update item
+    cur.execute("""
+        UPDATE item
+        SET title=%s, description=%s, location=%s, date=%s, decisiontype=%s, campusid=%s
+        WHERE itemid=%s
+        RETURNING *
+    """, (
+        data.get("title"), 
+        data.get("description"), 
+        data.get("location"), 
+        data.get("date"),
+        data.get("decisionType"),
+        data.get("campusID"),
+        item_id
+    ))
+    
+    updated_item = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+    return jsonify(updated_item)
+
+@app.delete("/item/<int:item_id>")
+def delete_item(item_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM item WHERE itemid = %s RETURNING itemid", (item_id,))
+    deleted = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not deleted:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"result": f"deleted item {deleted['itemid']}"})
+
+
 @app.get("/item_image/<int:item_id>")
 def get_item_image(item_id):
     conn = get_connection()

@@ -101,7 +101,9 @@ def update_item(item_id):
     cur = conn.cursor()
 
     cur.execute("SELECT * FROM item WHERE itemid=%s", (item_id,))
-    if not cur.fetchone():
+    existing = cur.fetchone()
+
+    if not existing:
         cur.close()
         conn.close()
         return jsonify({"error": "Item not found"}), 404
@@ -112,12 +114,12 @@ def update_item(item_id):
         WHERE itemid=%s
         RETURNING *
     """, (
-        data.get("title"), 
-        data.get("description"), 
-        data.get("location"), 
-        data.get("date"),
-        data.get("decisionType"),
-        data.get("campusID"),
+        data.get("title", existing["title"]), 
+        data.get("description", existing["description"]), 
+        data.get("location", existing ["location"]), 
+        data.get("date", existing["date"]),
+        data.get("decisionType", existing["decisiontype"]),
+        data.get("campusID", existing["campusid"]),
         item_id
     ))
     

@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from db import get_connection
 
 app = Flask(__name__)
-
+CORS(app)
 @app.post("/register")
 def register():
     data = request.json
@@ -222,4 +223,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=8000)

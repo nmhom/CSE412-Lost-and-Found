@@ -95,6 +95,8 @@ def get_items():
     
     return jsonify(items)
 
+from datetime import datetime
+
 @app.patch("/item/<int:item_id>")
 def update_item(item_id):
     data = request.json
@@ -109,26 +111,46 @@ def update_item(item_id):
         conn.close()
         return jsonify({"error": "Item not found"}), 404
 
+    # Normalize date
+    raw_date = data.get("date", existing["date"])
+
+    # Convert date into ISO format YYYY-MM-DD
+    parsed_date = None
+    if raw_date:
+        try:
+            parsed_date = datetime.fromisoformat(str(raw_date)).date()
+        except:
+            # fallback for "Sun, 30 Nov 2025 00:00:00 GMT"
+            try:
+                parsed_date = datetime.strptime(raw_date, "%a, %d %b %Y %H:%M:%S %Z").date()
+            except:
+                return jsonify({"error": f"Invalid date: {raw_date}"}), 400
+
     cur.execute("""
         UPDATE item
-        SET title=%s, description=%s, location=%s, date=%s, decisiontype=%s, campusid=%s
+        SET title=%s,
+            description=%s,
+            location=%s,
+            date=%s,
+            decisiontype=%s,
+            campusid=%s
         WHERE itemid=%s
         RETURNING *
     """, (
-        data.get("title", existing["title"]), 
-        data.get("description", existing["description"]), 
-        data.get("location", existing ["location"]), 
-        data.get("date", existing["date"]),
+        data.get("title", existing["title"]),
+        data.get("description", existing["description"]),
+        data.get("location", existing["location"]),
+        parsed_date,
         data.get("decisionType", existing["decisiontype"]),
         data.get("campusID", existing["campusid"]),
         item_id
     ))
-    
+
     updated_item = cur.fetchone()
     conn.commit()
     cur.close()
     conn.close()
-    
+
     return jsonify(updated_item)
 
 @app.delete("/item/<int:item_id>")

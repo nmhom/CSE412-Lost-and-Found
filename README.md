@@ -41,7 +41,7 @@ cd CSE412-Lost-and-Found
 ```
 ### 2. Database Setup
 1. Create a PostgreSQL database named `lost_found_db`
-2. Run the schema creation script in pgAdmin
+2. Run the schema creation script in pgAdmin (sql queries available in Database schema file)
 3. Import data from the provided `.tbl` files using COPY commands from the Phase 03 Document
 
 ### 3. Backend Setup

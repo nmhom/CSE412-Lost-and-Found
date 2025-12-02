@@ -1,0 +1,47 @@
+Database Dump copy and paste 
+
+CREATE TYPE status_type AS ENUM ('lost', 'found', 'resolved');
+CREATE TABLE users (
+userid SERIAL PRIMARY KEY,
+    			firstname VARCHAR(100) NOT NULL,
+lastname VARCHAR(100) NOT NULL,
+    			email VARCHAR(255) UNIQUE NOT NULL,
+    			password TEXT NOT NULL
+);
+CREATE TABLE campus (
+    			campusid SERIAL PRIMARY KEY,
+    			dropoff VARCHAR(255) UNIQUE NOT NULL
+);
+CREATE TABLE item (
+    			itemid SERIAL PRIMARY KEY,
+  			location VARCHAR(255) NOT NULL,
+   			date DATE,
+    			title VARCHAR(255) NOT NULL,
+    			description TEXT,
+    			decisiontype status_type DEFAULT 'lost',
+    			campusid INTEGER REFERENCES campus(campusid),
+    			userid INTEGER REFERENCES users(userid)
+);
+CREATE TABLE item_image (
+   			 imageid SERIAL PRIMARY KEY,
+    			itemid INTEGER REFERENCES item(itemid) ON DELETE CASCADE,
+    			imageurl VARCHAR(500)
+);
+
+CREATE TABLE claim (
+    			claimid SERIAL PRIMARY KEY,
+    			claimdate DATE,
+    			status status_type DEFAULT 'lost',
+    			claimdescription TEXT NOT NULL,
+   			itemid INTEGER REFERENCES item(itemid),
+    			userid INTEGER REFERENCES users(userid)
+);
+
+
+Run these commands after table creation for auto-incrementing feature
+
+SELECT setval(pg_get_serial_sequence('users', 'userid'), COALESCE(MAX(userid), 0) + 1, false) FROM users;
+SELECT setval(pg_get_serial_sequence('campus', 'campusid'), COALESCE(MAX(campusid), 0) + 1, false) FROM campus;
+SELECT setval(pg_get_serial_sequence('item', 'itemid'), COALESCE(MAX(itemid), 0) + 1, false) FROM item;
+SELECT setval(pg_get_serial_sequence('item_image', 'imageid'), COALESCE(MAX(imageid), 0) + 1, false) FROM item_image;
+SELECT setval(pg_get_serial_sequence('claim', 'claimid'), COALESCE(MAX(claimid), 0) + 1, false) FROM claim;
